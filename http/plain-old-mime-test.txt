@@ -1,0 +1,3 @@
+I am a test Lua server, and this is a text/plain object.
+
+Herp, derp. Yes, yes I am.
