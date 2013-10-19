@@ -121,6 +121,8 @@ function WebServer:mainLoop()
 			-- Hastily dipatch a coroutine-thread (set, start, offer)
 			local t = thread:new()
 			t.run = function() return WebServer:handleClient(client) end
+			-- Thread prototype t uses sandbox.error (error in context)
+			t.error = error
 			t:start()
 			threadRunner:offer(t)
 		end
@@ -351,6 +353,8 @@ end
 -- Spawn new main thread
 local mainThread = thread:new()
 mainThread.run = function() return WebServer:run() end
+-- mainThread thread prototype uses sandbox.error
+mainThread.error = sandbox.error
 mainThread:start()
 threadRunner:offer(mainThread)
 

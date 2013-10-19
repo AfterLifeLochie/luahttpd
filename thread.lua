@@ -22,24 +22,25 @@
 
 thread = {
 	new = function(...) local result = {} setmetatable(result, { __index = thread }) return result end,
+	error = function(...) error(...) end,
 	
 	resume = function(self)
 		if (self.cothread) and not (coroutine.status(self.cothread) == "dead") then
 			if (self.isBlocked) then if (self.blockingCallback) then self.blockingCallback() end
 			else
 				local ok, result = coroutine.resume(self.cothread)
-				if not (ok) then error("Unexpected thread error: " .. (result or 'failed to report')) end
+				if not (ok) then self.error("Unexpected thread error: " .. (result or 'failed to report')) end
 				if (self.cothread == nil) or (coroutine.status(self.cothread) == "dead") then
 					self.alive = false self.finished = true
 				end
 				return result
 			end
-		else error("Cannot resume dead thread.") end
+		else self.error("Cannot resume dead thread.") end
 	end,
 	
 	start = function(self) self.cothread = coroutine.create(self.run) self.alive = true end,
 	interrupt = function(self) self.alive = false self.finished = true self.cothread = nil end,
-	stop = function(self) self.cothread = nil error("Forced thread stop!") end,
+	stop = function(self) self.cothread = nil self.error("Forced thread stop!") end,
 	
 	block = function(self, callback) self.isBlocked = true self.blockingCallback = callback end,
 	getIsBlocked = function(self) return self.isBlocked end,
